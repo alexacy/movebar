@@ -4,8 +4,8 @@ using Toybox.ActivityMonitor;
 (:glance)
 class MoveBarGlanceView extends WatchUi.GlanceView
 {
- 	var segmentHeight = 10;
- 	var segmentVertOffset = 30;
+ 	var segmentHeight = 7;
+ 	var segmentVertOffset = 28;
  	
  	var firstWidth = 80;
  	var nextWidth = 20;
@@ -13,13 +13,30 @@ class MoveBarGlanceView extends WatchUi.GlanceView
  	var segmentMargin = 2;
  	var filledColor = Graphics.COLOR_RED;
  	var emptyColor = Graphics.COLOR_LT_GRAY;
- 	var arrowWidth = 5;
+ 	var arrowWidth = 2;
  	var titleFont;
+    var stepsBitmap;
+    var floorsBitmap;
+    
+    var secondaryTextVertOffset = 37;
     
     function onLayout(dc) {
         titleFont = WatchUi.loadResource(Rez.Fonts.RobotoBold);
+        stepsBitmap = WatchUi.loadResource(Rez.Drawables.StepsIcon);
+        floorsBitmap = WatchUi.loadResource(Rez.Drawables.FloorsIcon);
     }
     
+    function drawFirstSegment(dc, color, x, width) {
+ 		dc.setColor(color, color);
+		var coords = [[x, segmentVertOffset], 
+		              [x + width - arrowWidth, segmentVertOffset],
+		              [x + width, segmentVertOffset + segmentHeight / 2],
+		              [x + width - arrowWidth, segmentVertOffset + segmentHeight],
+		              [x, segmentVertOffset + segmentHeight],
+		              [x, segmentVertOffset]];
+		dc.fillPolygon(coords);           
+ 	}
+ 	
  	function drawSegment(dc, color, x, width) {
  		dc.setColor(color, color);
 		var coords = [[x, segmentVertOffset], 
@@ -42,11 +59,13 @@ class MoveBarGlanceView extends WatchUi.GlanceView
  			} else {
  				color = emptyColor;
  			}
- 			if(i > 0) {
+ 			if(i == 0) {
+ 				drawFirstSegment(dc, color, x, width);
+ 			} else {
  				width = nextWidth;
+ 				drawSegment(dc, color, x, width);
  			}
  			
- 			drawSegment(dc, color, x, width);
  			x += width + segmentMargin;
  		}
  	}
@@ -63,9 +82,15 @@ class MoveBarGlanceView extends WatchUi.GlanceView
 		dc.setColor(Graphics.COLOR_BLACK,Graphics.COLOR_BLACK);
 		dc.clear();
 		dc.setColor(Graphics.COLOR_WHITE,Graphics.COLOR_TRANSPARENT);
-		dc.drawText(0, 2, titleFont, "MOVE BAR" , Graphics.TEXT_JUSTIFY_LEFT);
+		dc.drawText(0, 0, titleFont, "MOVE BAR" , Graphics.TEXT_JUSTIFY_LEFT);
 		var info = ActivityMonitor.getInfo();
 		drawSegments(dc, info.moveBarLevel);
+		
+		dc.setColor(Graphics.COLOR_WHITE,Graphics.COLOR_TRANSPARENT);
+		dc.drawBitmap(0, secondaryTextVertOffset + 7, stepsBitmap);
+		dc.drawText(18, secondaryTextVertOffset, Graphics.FONT_TINY, info.steps.toString(), Graphics.TEXT_JUSTIFY_LEFT);
+		dc.drawBitmap(width / 2, secondaryTextVertOffset + 7, floorsBitmap);
+		dc.drawText(width / 2 + 20, secondaryTextVertOffset, Graphics.FONT_TINY, info.floorsClimbed.toString(), Graphics.TEXT_JUSTIFY_LEFT);
     } 
 }
 
